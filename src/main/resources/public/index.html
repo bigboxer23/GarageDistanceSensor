@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Distance Display</title>
+	<script src="jquery-2.2.2.min.js"></script>
+	<script>
+		var myIdealDistance = 100;
+		var myRange = 25;
+		var myRefreshTime = 1500;
+		var myLastDistance = -1;
+		function run()
+		{
+			(function(){
+				var aCallback = arguments.callee;
+				$.ajax("Distance")
+						.done(function(theData)
+						{
+							update(theData, aCallback);
+						})
+						.fail(function()
+						{
+							update(null, aCallback);
+						});
+			})();
+		}
+		function update(theData, theCallback)
+		{
+			var anElement = $("#main");
+			var aDistance = parseFloat(theData);
+			if (!isNaN(aDistance))
+			{
+				aDistance = parseInt(aDistance);
+				if (myLastDistance < 0)
+				{
+					myLastDistance = aDistance;
+				}
+				if (Math.abs(aDistance - myLastDistance) > 100)
+				{
+					aDistance = -1;
+				}
+				// temp to level out sporadic values
+				if (aDistance > 0)
+				{
+					anElement.html("" + aDistance);
+					anElement = $("body");
+					anElement.removeClass("green red yellow");
+					if (aDistance > (myIdealDistance - myRange) && aDistance <= (myIdealDistance + myRange))
+					{
+						anElement.addClass("green");
+					} else if (aDistance > (myIdealDistance - (3 * myRange)) && aDistance <= (myIdealDistance + (3 * myRange)))
+					{
+						anElement.addClass("yellow");
+					} else
+					{
+						anElement.addClass("red");
+					}
+				}
+				myLastDistance = aDistance;
+			}
+			setTimeout(theCallback, myRefreshTime);
+		}
+	</script>
+	<style type="text/css">
+		html, body
+		{
+			height:100%;
+			overflow:hidden;
+		}
+		body
+		{
+			display: -webkit-flex;
+			display:flex;
+			-webkit-align-items: center;
+			align-items: center;
+			-webkit-justify-content:center;
+			justify-content: center;
+		}
+		body *
+		{
+			color:#fff;
+		}
+		.green
+		{
+			background-color: #008000;
+		}
+		.red
+		{
+			background-color: #FF0000;
+		}
+		.yellow
+		{
+			background-color: #FFFF00;
+			color:#000;
+		}
+		#main
+		{
+			font-size: 96px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body onLoad="run();">
+<div id="main"></div>
+</body>
+</html>
